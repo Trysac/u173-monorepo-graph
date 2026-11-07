@@ -1,55 +1,44 @@
-# monorepo-graph
+# @trysac/monorepo-graph
 
-[![npm version](https://img.shields.io/npm/v/@trysac/monorepo-graph.svg)](https://www.npmjs.com/package/@trysac/monorepo-graph)
-[![license: MIT](https://img.shields.io/npm/l/@trysac/monorepo-graph.svg)](LICENSE)
 [![CI](https://github.com/Trysac/u173-monorepo-graph/actions/workflows/ci.yml/badge.svg)](https://github.com/Trysac/u173-monorepo-graph/actions/workflows/ci.yml)
 
-Build the dependency graph of a JavaScript workspace monorepo from package.json files: topological order, cycles, dependents, affected packages and DOT output
+In npm, Yarn or pnpm workspaces, build order, release order and what to test after a change all depend on the internal dependency graph, yet teams keep that knowledge in scripts that miss devDependencies or loop forever on cycles. Full monorepo tools such as Nx or Turborepo bring a whole build system. This library computes the graph and the common queries from manifests alone, deterministically.
 
-## Problem
+## Installation
 
-Describe in two or three sentences the concrete problem this utility solves, who hits it, and why existing
-packages do not solve it well. Keep it factual; link to an issue or decision record when there is one.
-
-## Install
-
-```sh
+```bash
 npm install @trysac/monorepo-graph
 ```
 
-Requires Node.js 20 or newer. The package ships ES modules with TypeScript declarations.
-
 ## Usage
 
-```ts
-import { greet } from "@trysac/monorepo-graph";
+```typescript
+import { buildGraph, topoOrder, affected } from '@trysac/monorepo-graph';
 
-// Build a greeting; surrounding whitespace is ignored.
-const message = greet("  Ada ");
-console.log(message); // "Hello, Ada!"
-
-try {
-  greet("   ");
-} catch (error) {
-  console.error((error as Error).message); // "name must not be empty"
-}
+const graph = buildGraph({
+  'packages/a/package.json': '{"name":"@x/a","dependencies":{"@x/b":"*"}}',
+  'packages/b/package.json': '{"name":"@x/b"}',
+});
+console.log(topoOrder(graph)); // ['@x/b', '@x/a']
 ```
 
-## API
+## API Summary
 
-| Export | Signature | Description |
-|---|---|---|
-| `greet` | `(name: string) => string` | Placeholder API; replace it with the real one. |
+### Functions
+- `buildGraph(manifests: Record<string, string>): Graph`: Parses manifests. Rejects if JSON is invalid, name is missing, `__proto__` is used, or size > 1 MiB (`manifest_too_large`).
+- `topoOrder(graph: Graph): string[]`: Returns sorted topological order. Throws `GraphError('cycle')` if cycles exist.
+- `findCycles(graph: Graph): string[][]`: Detects cycles via Tarjan's algorithm.
+- `dependents(graph: Graph, name: string, opts?: { transitive?: boolean }): string[]`: Finds packages depending on the target. Throws `unknown_package`.
+- `affected(graph: Graph, changed: readonly string[]): string[]`: Computes changed package + transitive dependents.
+- `toDot(graph: Graph): string`: Serializes to Graphviz DOT.
+- `loadWorkspace(fs: WorkspaceFs, root: string): Promise<Record<string, string>>`: Discovers manifests based on root `package.json` workspaces. Patterns support literal paths or trailing `*`.
 
-## Development
+### Options & Limits
+- Max manifest size: 1,048,576 characters.
+- Supported patterns: literal paths and `path/*`.
+- Unsupported patterns: `**`, `?`, braces, `!`, or `..` traversals.
 
-```sh
-npm install
-npm run check   # lint, format, types, tests with coverage, docs, secrets
-```
+## Why not Nx or Turborepo?
+This is a dependency-free library for the graph questions alone, avoiding the overhead of heavy orchestration frameworks.
 
-See [AGENTS.md](AGENTS.md) for the full command list and [CONTRIBUTING.md](CONTRIBUTING.md) for the workflow.
-
-## License
-
-[MIT](LICENSE) © 2026 Miguel Gomez
+See [Security](docs/SECURITY.md) for detailed threat model.

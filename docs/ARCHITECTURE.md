@@ -1,30 +1,17 @@
 # Architecture
 
-## Overview
+`@trysac/monorepo-graph` is designed as a standalone, dependency-free library for querying and computing dependency graphs in JavaScript monorepos.
 
-`@trysac/monorepo-graph` is a small, dependency-free TypeScript library published to npm as ES modules with type
-declarations. Build the dependency graph of a JavaScript workspace monorepo from package.json files: topological order, cycles, dependents, affected packages and DOT output
+## Core Principles
 
-## Modules
+1. **Separation of Graph Math from I/O**:
+   `src/graph.ts` contains pure functions operating on plain objects (`Graph`, `Edge`). No file system calls, child processes, or node modules are used in graph computation.
 
-| Module | Responsibility |
-|---|---|
-| `src/index.ts` | Public API. Everything consumers import is exported from here. |
+2. **Abstract Workspace Discovery**:
+   `src/workspace.ts` interacts with monorepo directories strictly through the `WorkspaceFs` interface (`readFile`, `listDirs`). This allows testing with in-memory filesystems and running in browsers or worker environments.
 
-Add a row when you add a module. Internal modules are not re-exported unless they are part of the public API.
+3. **Deterministic Kahn's Ordering**:
+   `topoOrder` sorts zero-in-degree ready queues by lexicographical code-unit order at every step, guaranteeing identical ordering across platforms.
 
-## Boundaries
-
-- No runtime dependencies by default; any addition is justified in [STACK.md](STACK.md).
-- No I/O at import time. Functions are pure unless their documentation says otherwise.
-- Errors are thrown as built-in error types (`TypeError`, `RangeError`) with actionable messages.
-
-## Build and distribution
-
-`npm run build` compiles `src/` to `dist/` with `tsconfig.build.json`. Only `dist/` is published
-(`files` in `package.json`).
-
-## Decisions
-
-Architectural decisions are recorded in [decisions/](decisions/), starting with
-[0001](decisions/0001-record-architecture-decisions.md).
+4. **Tarjan's SCC Cycle Detection**:
+   Cycle analysis detects both multi-node circular chains and self-loops, reporting clear cycle paths when `topoOrder` fails.

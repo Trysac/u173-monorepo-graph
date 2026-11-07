@@ -1,20 +1,15 @@
 /**
- * Public entry point of @trysac/monorepo-graph.
- *
- * Replace this placeholder with the utility's real API. Keep every export documented and covered by tests.
+ * @module @trysac/monorepo-graph
+ * High performance, dependency-free JavaScript workspace monorepo graph builder and analyzer.
  */
 
-/**
- * Builds a greeting for `name`.
- *
- * @param name - Who to greet. Surrounding whitespace is ignored.
- * @returns The greeting, for example `"Hello, Ada!"`.
- * @throws {TypeError} When `name` is empty after trimming.
- */
-export function greet(name: string): string {
-  const trimmed = name.trim();
-  if (trimmed === "") {
-    throw new TypeError("name must not be empty");
-  }
-  return `Hello, ${trimmed}!`;
-}
+export { affected, buildGraph, dependents, findCycles, toDot, topoOrder } from "./graph.js";
+export {
+  type DependencyKind,
+  type Edge,
+  type Graph,
+  GraphError,
+  type GraphErrorCode,
+  type WorkspaceFs,
+} from "./types.js";
+export { loadWorkspace } from "./workspace.js";
