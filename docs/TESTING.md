@@ -1,28 +1,7 @@
-# Testing
+# Testing Strategy
 
-## Tools
-
-- [Vitest](https://vitest.dev/) runs the suites in `test/`.
-- Coverage is collected with V8 (`@vitest/coverage-v8`) over `src/`.
-
-## Commands
-
-```sh
-npm test            # vitest run --coverage
-npx vitest          # watch mode while developing
-npm run check       # every gate, including tests
-```
-
-## Rules
-
-- Coverage must stay at or above 80 % for lines, branches, functions and statements (`vitest.config.ts`).
-  Lowering the thresholds is not allowed.
-- Test through the public entry point (`src/index.ts`) and assert observable behavior: return values,
-  thrown errors and their messages.
-- Each bug fix adds a test that fails without the fix.
-- Tests are deterministic: no network, no real clock or randomness without injection, no shared state between
-  tests. Temporary files go to the OS temp directory and are removed by the test.
-
-## Reports
-
-Coverage reports are written to `coverage/` (text summary and `lcov`). The folder is ignored by git.
+## Structure
+- `test/graph.test.ts`: Covers graph creation, dependency edge precedence, topological ordering, Tarjan cycle detection, and affected set logic using static manifest data.
+- `test/graph-edge.test.ts`: Covers validation edge cases like malformed JSON, duplicate names, huge manifests, and DOT serialization nuances.
+- `test/cli.test.ts` & `test/cli-edge.test.ts`: Tests the CLI interface using real filesystem temporary directories, validating command-line flags and exit codes.
+- `test/workspace.test.ts` & `test/workspace-edge.test.ts`: Unit tests for `loadWorkspace` using an in-memory mock `WorkspaceFs`, ensuring wildcard expansion and pattern validation work correctly.
