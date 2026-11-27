@@ -6,9 +6,15 @@ In npm, Yarn or pnpm workspaces, build order, release order and what to test aft
 
 ## Installation
 
-```bash
-npm install @trysac/monorepo-graph
+Not published to npm yet. Build it from a clone, then install it from the local path:
+
+```sh
+git clone https://github.com/Trysac/u173-monorepo-graph.git
+cd u173-monorepo-graph && npm ci && npm run build
+cd ../your-project && npm install ../u173-monorepo-graph
 ```
+
+Imports keep the package name: `import { ... } from "@trysac/monorepo-graph"`.
 
 ## Usage
 
